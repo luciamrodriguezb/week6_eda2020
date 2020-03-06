@@ -1,0 +1,162 @@
+---
+title: "week6_eda2020"
+author: "Lucia M Rodriguez Bravo"
+date: "March, 2020"
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    theme: united
+    toc: yes
+editor_options: 
+  chunk_output_type: console
+---
+# Graphing Data activity
+## Data extraction
+First we're calling the packages to be used
+```{r, message=FALSE}
+library(tidyverse)
+library(dplyr)
+library(lubridate)
+```
+
+## Load data
+Second, we're loading a database already included in R
+```{r}
+irisdata<-iris #I chose to create an object to look at the data more easily
+# ------------------------------------------
+#STEP 1: Did it load correctly?
+head(irisdata) #loading correct
+# ------------------------------------------
+#STEP 2: Are the data types right?
+sapply(irisdata,class) #classes correct
+# ------------------------------------------
+# STEP 3: Check for missing or impossible numeric values
+range(irisdata$Sepal.Length) 
+range(irisdata$Sepal.Width)
+range(irisdata$Petal.Length)
+range(irisdata$Petal.Width) #all good
+# ------------------------------------------
+# STEP 4: Check factor levels
+levels(irisdata$Species)
+
+# All OK
+```
+
+# Plot One Variable - Base
+## Discrete variable
+```{r}
+#To plot counts (Y) of a discrete variable X (in this case species of flower) in Base
+barplot(table(irisdata$Species)) #table creates a count
+```
+
+## Continuous variable
+```{r}
+#To plot a continuous variable X (in this case petal length) in Base
+hist(irisdata$Petal.Length)
+
+# Try choosing different breaks or bins of data
+hist(irisdata$Petal.Length,breaks=4)
+
+#A histogram with four columns
+# Extract the hist function calculations
+petalhist<-hist(irisdata$Petal.Length) #we create an object in which we can see our histogram function calculations 
+petalhist
+# A way to represent by species more clearly
+boxplot(irisdata$Petal.Length~irisdata$Species)
+
+```
+
+# Plot One Variable - ggplot
+## Discrete variable
+```{r}
+#To plot counts (Y) of a discrete variable X (in this case species of flower) in ggplot
+
+Speciesgg<-ggplot(data = irisdata,aes(Species))+geom_bar()
+Speciesgg #I chose to store the plot as an object
+
+# Demonstrate how things can be layered (by creating a plot object and adding different types of plots
+Speciesbase<-ggplot(data = irisdata,aes(Species)) 
+Speciesbase #This is just the canvas
+```
+
+## Continuous variable
+```{r}
+#To plot a continuous variable X (in this case petal length) in ggplot
+petalgg<-ggplot(data=irisdata,aes(Petal.Length))
+petalgg
+petalgg + geom_area(stat="bin") #warning just tells you that default 'bin=30'
+
+# Follow the warning suggestion and explore different bin sizes
+petalgg+geom_histogram(binwidth = 1) #sets width of the bins
+petalgg+geom_histogram(bins = 3) #sets number of bins TO THREE. Vindication!
+
+# Try to flip the axis order of your plot
+petalgg+geom_histogram(binwidth = 1)+coord_flip() 
+petalgg+geom_histogram(bins = 3)+coord_flip() 
+# hashtagflipped B)
+```
+
+# Plot Two Variable - Base
+## Continuous X, continuous Y
+```{r}
+# Explore different plots interchanging the 'predictive' and 'response' variables among the four available
+#For predictive variable sepal width, response variable sepal length:
+plot(Sepal.Length~Sepal.Width, data=irisdata)
+#there are three species of flower in this dataset, 
+#which messes with the ability to have a clear relation between variables. SO:
+setosa<-filter(irisdata, Species=="setosa")
+plot(Sepal.Length~Sepal.Width, data=setosa) #this one looks like there might be a relationship.
+#Some other attempts:
+plot(Petal.Length~Petal.Width, data=setosa)
+plot(Petal.Width~Petal.Length, data=setosa)
+#it looks like the width and length of the sepal has a more defined proportion than the width and length of the petal for this species
+
+# Now I'll add a line representing linear model fit to the more successful graph:
+plot(Sepal.Length~Sepal.Width, data=setosa)
+abline(lm(Sepal.Length~Sepal.Width, data=setosa))
+```
+
+## Discrete X, continuous Y
+```{r}
+# Make a plot that most accurately represent the whole range of a continuous (Y) by species (X)
+
+#IDONOTKNOW
+
+```
+
+# Plot Two Variable - ggplot
+## Continuous X, continuous Y
+```{r}
+
+# Explore different plots interchanging the 'predictive' and 'response' variables among the four available-
+#for this one I will plot petal length and sepal length
+flowersize<-ggplot(data=irisdata, aes(x=Petal.Length, y=Sepal.Length))
+flowersize+geom_point()
+#now petal width and sepal width
+flowerwidth<-ggplot(data=irisdata, aes(x=Petal.Width, y=Sepal.Width))
+flowerwidth+geom_point() 
+#not nearly as neat, it looks like different species might have different relationships
+# Try adding lines representing different trend lines to help you explore patterns
+# Add a linear model fit to your plots
+#I'll do this to my more successful plot
+flowersize+geom_point()+geom_smooth(method="lm", level=0.5)
+
+# Add a 'Loess smoothing' fit to your plots
+ flowersize+geom_point()+geom_smooth(span=100)
+```
+
+## Discrete X, continuous Y
+```{r}
+# Make a plot that most accurately represent the whole range of a continuous (Y) by species (X)
+ggplot(data=irisdata,aes(x=Species,y=Petal.Length))+geom_boxplot()
+
+# Try adding datapoints to this plot to reveal patterns not easy to see in a whiskerplot
+ggplot(data=irisdata,aes(x=Species,y=Petal.Length))+geom_jitter()+geom_boxplot(alpha=0.7)
+#Et voila
+```
+
+
+
+
+
